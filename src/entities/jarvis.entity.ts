@@ -1,3 +1,3 @@
-export interface SendMessageToJarvisDTO {
-    content: string;
+export interface JarvisMessageRequestDTO {
+  message: string;
 }
