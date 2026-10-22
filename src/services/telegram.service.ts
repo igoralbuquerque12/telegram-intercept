@@ -16,7 +16,10 @@ export class TelegramService {
       this.stringSession,
       env.TELEGRAM.API_ID,
       env.TELEGRAM.API_HASH,
-      { connectionRetries: 5 }
+      { 
+        connectionRetries: 5,
+        useWSS: true,
+      }
     );
   }
 
