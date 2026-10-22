@@ -19,13 +19,29 @@ export class CriteriaService {
   }
 
   /**
+   * Criteria: UltraGear 27
+   * 1º: Contain "ultragear" (case-insensitive, substring match allowed)
+   * 2º: Contain "27" (substring match allowed, e.g. "27GS60F", "AA27AA", "27\"")
+   */
+  public matchUltragear27(messageText: string): boolean {
+    if (!messageText) return false;
+
+    const hasUltragear = /ultragear/i.test(messageText);
+    if (!hasUltragear) return false;
+
+    const has27 = /27/.test(messageText);
+
+    return has27;
+  }
+
+  /**
    * Avaliate the incoming message against defined criteria and return the match result.
    */
   public evaluate(payload: IncomingMessageDTO): MatchResult {
     const matchedCriteria: string[] = [];
 
-    if (this.matchPlaystation(payload.text)) {
-      matchedCriteria.push("PLAYSTATION");
+    if (this.matchUltragear27(payload.text)) {
+      matchedCriteria.push("ULTRAGEAR_27");
     }
 
     return {

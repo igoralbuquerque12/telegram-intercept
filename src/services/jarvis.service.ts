@@ -1,54 +1,51 @@
 import { env } from "../config/env";
-import { SendMessageToJarvisDTO } from "../entities/jarvis.entity";
+import { AlertProvider, SendAlertDTO } from "../entities/alert.entity";
+import { JarvisMessageRequestDTO } from "../entities/jarvis.entity";
 
-export class JarvisService {
-    public async sendMessage(payload: SendMessageToJarvisDTO): Promise<boolean> {
-        const url = `${this.getJarvisUrl()}/whatsapp/send`;
-        const jidId = this.getUserJidId();
-        const jarvisAdminKey = this.getJarvisAdminKey();
+export class JarvisService implements AlertProvider {
+  public async send(payload: SendAlertDTO): Promise<boolean> {
+    const baseUrl = this.getJarvisUrl().replace(/\/+$/, "");
+    const url = `${baseUrl}/v1/messages`;
+    const jarvisAdminKey = this.getJarvisAdminKey();
 
-        const { content } = payload;
+    const body: JarvisMessageRequestDTO = {
+      message: payload.content,
+    };
 
-        try {
-            const request = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-admin-key': jarvisAdminKey,
-                },
-                body: JSON.stringify({
-                    phone: jidId,
-                    message: content
-                }),
-            });
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jarvisAdminKey}`,
+        },
+        body: JSON.stringify(body),
+      });
 
-            if (!request.ok) {
-                console.error('[JarvisService] - Failed to send message to Jarvis. Status:', request.status, request.statusText);
-                return false;
-            }
+      if (!response.ok) {
+        console.error(
+          "[JarvisService] - Failed to send message to Jarvis. Status:",
+          response.status,
+          response.statusText
+        );
+        return false;
+      }
 
-            return true;
-        } catch (error) {
-            console.error('[JarvisService] - Error sending message to Jarvis: ', error);
-            return false;
-        }
+      return true;
+    } catch (error) {
+      console.error("[JarvisService] - Error sending message to Jarvis:", error);
+      return false;
     }
+  }
 
-    private getJarvisUrl(): string {
-        return env.JARVIS.JARVIS_URL;
-    }
+  private getJarvisUrl(): string {
+    return env.JARVIS.JARVIS_URL;
+  }
 
-    private getUserJidId(): string {
-        if (!env.JARVIS.USER_JID) {
-            throw new Error("USER_JID should be provided in the environment variables.");
-        }
-        return env.JARVIS.USER_JID;
+  private getJarvisAdminKey(): string {
+    if (!env.JARVIS.JARVIS_ADMIN_KEY) {
+      throw new Error("JARVIS_ADMIN_KEY should be provided in the environment variables.");
     }
-
-    private getJarvisAdminKey(): string {
-        if (!env.JARVIS.JARVIS_ADMIN_KEY) {
-            throw new Error("JARVIS_ADMIN_KEY should be provided in the environment variables.");
-        }
-        return env.JARVIS.JARVIS_ADMIN_KEY;
-    }
+    return env.JARVIS.JARVIS_ADMIN_KEY;
+  }
 }

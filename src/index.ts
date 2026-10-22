@@ -1,15 +1,16 @@
+import express from "express";
+import { env } from "./config/env";
+import { AlertService } from "./services/alert.service";
 import { CriteriaService } from "./services/criteria.service";
 import { JarvisService } from "./services/jarvis.service";
 import { MessageService } from "./services/message.service";
 import { TelegramService } from "./services/telegram.service";
 
-import express from "express";
-import { env } from "./config/env";
-
 async function bootstrap() {
   const criteriaService = new CriteriaService();
-  const jarvisService = new JarvisService();
-  const messageService = new MessageService(criteriaService, jarvisService);
+  const jarvisProvider = new JarvisService();
+  const alertService = new AlertService(jarvisProvider);
+  const messageService = new MessageService(criteriaService, alertService);
   const telegramService = new TelegramService(messageService);
 
   const app = express();
